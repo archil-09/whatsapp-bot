@@ -55,7 +55,8 @@ def generate_reply(message: str) -> str:
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"Groq Error: {e}")
+        print(f"Groq Error FULL DETAILS: {type(e).__name__}: {e}")
+       
         return "hey, something went wrong — try again!"
 
 # ============================================
