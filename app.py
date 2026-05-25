@@ -1,9 +1,6 @@
 # ============================================
-# INSTAGRAM AI DM BOT (Gemini + Official API)
+# WHATSAPP AI BOT (Gemini + Official API)
 # ============================================
-# INSTALL:
-# pip install flask requests google-genai python-dotenv
-
 from flask import Flask, request, jsonify
 import requests
 from google import genai
@@ -19,17 +16,18 @@ app = Flask(__name__)
 # ============================================
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
+PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ============================================
-# GEMINI SETUP (New SDK)
+# GEMINI SETUP
 # ============================================
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 BOT_PERSONALITY = """
-You are replying as a real Instagram user.
+You are replying as a real WhatsApp user.
 
 Style:
 - casual and friendly
@@ -62,21 +60,26 @@ Reply naturally.
         return response.text.strip()
     except Exception as e:
         print("Gemini Error:", e)
-        return "hey, something went wrong on my end — try again!"
+        return "hey, something went wrong — try again!"
 
 # ============================================
-# SEND DM VIA META API
+# SEND WHATSAPP MESSAGE
 # ============================================
 
-def send_message(recipient_id: str, text: str):
-    url = "https://graph.facebook.com/v19.0/me/messages"
-    payload = {
-        "recipient": {"id": recipient_id},
-        "message": {"text": text},
-        "access_token": ACCESS_TOKEN
+def send_message(to: str, text: str):
+    url = f"https://graph.facebook.com/v19.0/{PHONE_NUMBER_ID}/messages"
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Content-Type": "application/json"
     }
-    res = requests.post(url, json=payload)
-    print(f"Sent to {recipient_id}: {res.status_code}")
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to,
+        "type": "text",
+        "text": {"body": text}
+    }
+    res = requests.post(url, headers=headers, json=payload)
+    print(f"Sent to {to}: {res.status_code} {res.text}")
 
 # ============================================
 # WEBHOOK VERIFICATION
@@ -91,32 +94,32 @@ def verify():
     return "Forbidden", 403
 
 # ============================================
-# RECEIVE & REPLY TO DMs
+# RECEIVE & REPLY TO MESSAGES
 # ============================================
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.json
+    print("Incoming data:", data)
     try:
         for entry in data.get("entry", []):
-            for event in entry.get("messaging", []):
+            for change in entry.get("changes", []):
+                value = change.get("value", {})
+                messages = value.get("messages", [])
+                for message in messages:
+                    sender = message["from"]
+                    msg_type = message.get("type")
 
-                sender_id = event["sender"]["id"]
-                message_data = event.get("message", {})
-                text = message_data.get("text", "")
+                    if msg_type != "text":
+                        continue
 
-                # Skip empty or echo messages
-                if not text or message_data.get("is_echo"):
-                    continue
+                    text = message["text"]["body"]
+                    print(f"\nNew message from {sender}: {text}")
 
-                print(f"\nNew DM from {sender_id}: {text}")
+                    reply = generate_reply(text)
+                    print(f"Gemini Reply: {reply}")
 
-                # Generate AI reply
-                reply = generate_reply(text)
-                print(f"Gemini Reply: {reply}")
-
-                # Send it back
-                send_message(sender_id, reply)
+                    send_message(sender, reply)
 
     except Exception as e:
         print("Webhook Error:", e)
@@ -128,5 +131,6 @@ def webhook():
 # ============================================
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+    
