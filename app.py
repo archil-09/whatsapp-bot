@@ -59,9 +59,8 @@ Reply naturally.
         )
         return response.text.strip()
     except Exception as e:
-        print("Gemini Error:", e)
+        print(f"Gemini Error FULL: {e}")
         return "hey, something went wrong — try again!"
-
 # ============================================
 # SEND WHATSAPP MESSAGE
 # ============================================
