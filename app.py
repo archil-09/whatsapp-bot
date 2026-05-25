@@ -1,9 +1,9 @@
 # ============================================
-# WHATSAPP AI BOT (Gemini + Official API)
+# WHATSAPP AI BOT (Groq + Official API)
 # ============================================
 from flask import Flask, request, jsonify
 import requests
-
+from groq import Groq
 from dotenv import load_dotenv
 import os
 
@@ -18,13 +18,13 @@ app = Flask(__name__)
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
-
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # ============================================
-# GEMINI SETUP
+# GROQ SETUP
 # ============================================
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+groq_client = Groq(api_key=GROQ_API_KEY)
 
 BOT_PERSONALITY = """
 You are replying as a real WhatsApp user.
@@ -41,10 +41,8 @@ Always stay helpful and on-topic.
 """
 
 # ============================================
-# Replace Gemini with Groq
-from groq import Groq
-
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+# AI REPLY FUNCTION
+# ============================================
 
 def generate_reply(message: str) -> str:
     try:
@@ -59,6 +57,7 @@ def generate_reply(message: str) -> str:
     except Exception as e:
         print(f"Groq Error: {e}")
         return "hey, something went wrong — try again!"
+
 # ============================================
 # SEND WHATSAPP MESSAGE
 # ============================================
@@ -114,7 +113,7 @@ def webhook():
                     print(f"\nNew message from {sender}: {text}")
 
                     reply = generate_reply(text)
-                    print(f"Gemini Reply: {reply}")
+                    print(f"AI Reply: {reply}")
 
                     send_message(sender, reply)
 
