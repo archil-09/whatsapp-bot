@@ -3,7 +3,7 @@
 # ============================================
 from flask import Flask, request, jsonify
 import requests
-from google import genai
+
 from dotenv import load_dotenv
 import os
 
@@ -18,7 +18,7 @@ app = Flask(__name__)
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
 
 # ============================================
 # GEMINI SETUP
@@ -41,25 +41,23 @@ Always stay helpful and on-topic.
 """
 
 # ============================================
-# GEMINI REPLY FUNCTION
-# ============================================
+# Replace Gemini with Groq
+from groq import Groq
+
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def generate_reply(message: str) -> str:
-    prompt = f"""
-{BOT_PERSONALITY}
-
-User message: {message}
-
-Reply naturally.
-"""
     try:
-        response = client.models.generate_content(
-            model="gemini-2.0-flash-lite",
-            contents=prompt
+        response = groq_client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[
+                {"role": "system", "content": BOT_PERSONALITY},
+                {"role": "user", "content": message}
+            ]
         )
-        return response.text.strip()
+        return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"Gemini Error FULL: {e}")
+        print(f"Groq Error: {e}")
         return "hey, something went wrong — try again!"
 # ============================================
 # SEND WHATSAPP MESSAGE
