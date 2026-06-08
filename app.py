@@ -47,7 +47,7 @@ Always stay helpful and on-topic.
 def generate_reply(message: str) -> str:
     try:
         response = groq_client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": BOT_PERSONALITY},
                 {"role": "user", "content": message}
