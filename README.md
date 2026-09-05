@@ -88,5 +88,4 @@ The reply style is controlled by the `BOT_PERSONALITY` system prompt in `app.py`
 
 ## Notes
 
-- Only text messages are handled; other message types (images, audio, etc.) are currently ignored.
-- `requirements.txt` includes `google-genai`, which isn't used by the current code — remove it if you don't plan to add Gemini support.
+- Only text messages are handled; other message types (images, audio, etc.) are currently ignored..
