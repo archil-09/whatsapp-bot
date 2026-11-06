@@ -87,5 +87,7 @@ To deploy:
 The reply style is controlled by the `BOT_PERSONALITY` system prompt in `app.py`. Edit this string to change tone, length, or behavior.
 
 ## Notes
-
 - Only text messages are handled; other message types (images, audio, etc.) are currently ignored..
+
+
+#right now undeployable railway credits finished
